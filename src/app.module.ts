@@ -1,20 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { UsuariosModule } from './usuarios/usuarios.module';
 import { AutenticacionModule } from './autenticacion/autenticacion.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config/dist';
+import { TypeOrmModule } from '@nestjs/typeorm/dist';
+import { UsersModule } from './users/users.module';
 import databaseConfig from './config/database.config';
-
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig()),
-    UsuariosModule,
     AutenticacionModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

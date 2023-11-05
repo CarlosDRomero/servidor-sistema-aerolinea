@@ -13,6 +13,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string){
     const userFound = await this.usersService.findOne(email);
+    console.log(`Validando ${userFound}`)
     if (userFound && await comparePassword(password,userFound.password)) return userFound;
 
     return null;

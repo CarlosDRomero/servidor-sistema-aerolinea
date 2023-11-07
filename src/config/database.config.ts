@@ -5,13 +5,14 @@ export default registerAs('database',
 (): TypeOrmModuleOptions=>{
   console.log("Conectando base de datos: "+__dirname)
   return {
-    type: 'oracle',
+    type: 'postgres',
     host: process.env.BD_HOST,
     port: parseInt(process.env.BD_PUERTO),
     username: process.env.BD_USUARIO,
     password: process.env.BD_PASS,
-    sid: 'xe',
+    database: process.env.BD_NOMBRE,
     entities: [__dirname + '/../**/entities/*.entity{.ts,.js}'],
-    synchronize: true 
+    synchronize: true,
+    logging: true,
   }
 });

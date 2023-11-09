@@ -3,11 +3,15 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { comparePassword } from 'src/utils/bcrypt';
+import { VerifService } from 'src/verif/verif.service';
+import { CreateVerifDto } from 'src/verif/dto/create-verif.dto';
+import { UseCase } from 'src/verif/entities/verif.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private verifService: VerifService,
     private jwtService: JwtService
   ){}
 
@@ -21,6 +25,7 @@ export class AuthService {
 
   login(user: User){
     const payload = {email:user.email, sub: user.user_id};
+    this.verifService.generate(new CreateVerifDto(user,UseCase.LOGIN))
     return{
       access_token: this.jwtService.sign(payload)
     }

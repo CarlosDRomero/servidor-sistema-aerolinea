@@ -3,7 +3,7 @@ import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 export default registerAs('database',
 (): TypeOrmModuleOptions=>{
-  console.log("Conectando base de datos: "+__dirname)
+  console.log("Conectando base de datos...")
   return {
     type: 'postgres',
     host: process.env.BD_HOST,

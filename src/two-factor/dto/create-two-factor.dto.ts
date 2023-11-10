@@ -2,7 +2,7 @@ import { User } from "src/users/entities/user.entity";
 import { addMinutes } from "src/utils/dateOps";
 import { UseCase } from "../entities/verif.entity";
 
-export class CreateVerifDto {
+export class CreateTwoFactorDto {
   user: User
   createdAt?: Date
   expiresAt?: Date

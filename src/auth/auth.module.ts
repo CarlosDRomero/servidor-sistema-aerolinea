@@ -7,12 +7,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './auth.constants';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { VerifModule } from 'src/verif/verif.module';
+import { TwoFactorModule } from 'src/two-factor/two-factor.module';
 
 @Module({
   imports: [
     UsersModule,
-    VerifModule,
+    TwoFactorModule,
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,

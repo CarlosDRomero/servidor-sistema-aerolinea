@@ -10,7 +10,7 @@ import { EmailModule } from './email/email.module';
 import databaseConfig from './config/database.config';
 
 import { MailerModule } from 'nestjs-mailer';
-import { VerifModule } from './verif/verif.module';
+import { TwoFactorModule } from './two-factor/two-factor.module';
 import mailConfig from 'src/config/mail.config';
 
 @Module({
@@ -21,7 +21,7 @@ import mailConfig from 'src/config/mail.config';
     AuthModule,
     UsersModule,
     EmailModule,
-    VerifModule,
+    TwoFactorModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,17 +5,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { hashPassword } from "../utils/bcrypt"
-import { VerifService } from 'src/verif/verif.service';
-import { CreateVerifDto } from 'src/verif/dto/create-verif.dto';
 import { HttpException } from '@nestjs/common/exceptions';
-import { UseCase } from 'src/verif/entities/verif.entity';
+import { UseCase } from 'src/two-factor/entities/verif.entity';
+import { TwoFactorService } from 'src/two-factor/two-factor.service';
 
+//from netsjs cli i want to rename a full resource?
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepo: Repository<User>,
-    private verifService: VerifService
+    private twoFactorService: TwoFactorService
   ){}
 
   async create(dto: CreateUserDto) {
@@ -26,31 +26,36 @@ export class UsersService {
     );
 
     const newUser = this.usersRepo.create(dto)
-    newUser.password = await hashPassword(newUser.password);
     console.log(newUser)
     const savedUser = await this.usersRepo.save(newUser)
 
-    this.verifService.generate(new CreateVerifDto(savedUser, UseCase.SIGNUP));
+    // this.TwoFactorService.generate(new CreateTwoFactorDto(savedUser, UseCase.SIGNUP));
 
-    return {email:savedUser.email};
+    // return {email:savedUser.email};
   }
 
-  async verifyCode(email: string, code: string){
-    const user = await this.findOne(email);
-    if (!user){
-      return new HttpException(
-        `Error de verificación del usuario`,
-        401,
-      );
+  async createTemp(dto: CreateUserDto,session: Record<string,any>){
+    // const user = await this.findOne(email);
+    // if (!user) {
+    //   throw new HttpException('Usuario no encontrado', 404);
+    // }
+    dto.password = await hashPassword(dto.password);
+    session.user = dto;
+    this.twoFactorService.generate(session)
+    
+    return session;
+  }
+  async verifyRegisterCode(codigo: string, session: Record<string,any>){
+    console.log("codigo: "+session.code)    
+    if (codigo!==session.code){
+      return new HttpException("Codigo incorrecto", 401);
     }
-    const verified = await this.verifService.verifyCode({
-      user: user,
-      code: code
-    });
-    if(!verified) return new HttpException('Código incorrecto', 403);
-    return {
-      email: user.email
-    }
+    console.log("Codigo correcto")
+    await this.create(session.user)
+
+    delete session.user;
+    delete session.code;
+    return session.id;
   }
   findAll() {
     return this.usersRepo.find();

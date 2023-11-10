@@ -8,7 +8,7 @@ export enum UseCase{
 }
 
 @Entity('otp')
-export class Verif {
+export class otp {
   @PrimaryGeneratedColumn('uuid')
   id: string
   
@@ -26,6 +26,9 @@ export class Verif {
 
   @Column()
   expiresAt: Date
+
+  @Column()
+  user_id:string
 
   @OneToOne(() => User)
   @JoinColumn([{ name: 'user_id', referencedColumnName: 'user_id'}])

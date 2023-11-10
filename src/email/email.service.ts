@@ -10,8 +10,8 @@ export class EmailService {
     this.mailerService.sendMail({
       to,
       from: process.env.MAIL_USUARIO,
-      subject: 'Verificación por correo',
-      text: 'Este correo contiene el codigo de verificación para iniciar sesión en la pagina',
+      subject: 'two-factoricación por correo',
+      text: 'Este correo contiene el codigo de two-factoricación para iniciar sesión en la pagina',
       html:template('src/email/templates/correo-verificacion.hbs' , {codigo})
     })
     

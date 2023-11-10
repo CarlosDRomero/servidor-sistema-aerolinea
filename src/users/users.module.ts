@@ -4,12 +4,12 @@ import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 
-import { VerifModule } from 'src/verif/verif.module';
+import { TwoFactorModule } from 'src/two-factor/two-factor.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    VerifModule
+    TwoFactorModule
   ],
   controllers: [UsersController],
   providers: [UsersService],

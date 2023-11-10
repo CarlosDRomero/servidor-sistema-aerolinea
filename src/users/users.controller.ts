@@ -11,14 +11,13 @@ export class UsersController {
   @Post('signup')
   async create(@Body() dto: CreateUserDto, @Res({passthrough:true}) res: Response) {
     // await this.usersService.createTemp(dto);
-
+    res.headers.getSetCookie()
   }
   //when my angular site changes its direction the session seems to reset?
   @Post('verification')
-  async verify(@Body() dto:{code:string}, @Req() req: Record<string, any>) {
-    console.log(req.session.id)
-    await this.usersService.verifyRegisterCode(dto.code,req.session);
-    return req.session;
+  async verify(@Body() dto:{code:string}, @Res({passthrough:true}) res: Response) {
+    // await this.usersService.verifyRegisterCode(dto.code);
+    // return res.session;
   }
 
   @Get()

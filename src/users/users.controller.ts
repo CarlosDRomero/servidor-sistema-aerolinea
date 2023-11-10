@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Session, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Headers } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { HttpStatus } from '@nestjs/common/enums';
@@ -9,15 +9,14 @@ export class UsersController {
   ) {}
 
   @Post('signup')
-  async create(@Body() dto: CreateUserDto, @Res({passthrough:true}) res: Response) {
-    // await this.usersService.createTemp(dto);
-    res.headers.getSetCookie()
+  async create(@Body() dto: CreateUserDto) {
+    return await this.usersService.createTemp(dto);
   }
-  //when my angular site changes its direction the session seems to reset?
   @Post('verification')
-  async verify(@Body() dto:{code:string}, @Res({passthrough:true}) res: Response) {
-    // await this.usersService.verifyRegisterCode(dto.code);
-    // return res.session;
+  //nestjs get headers
+
+  async verify(@Headers() header: {usertoken:string}, @Body() dto:{code:string}) {
+    return await this.usersService.verifyRegisterCode(header.usertoken)
   }
 
   @Get()

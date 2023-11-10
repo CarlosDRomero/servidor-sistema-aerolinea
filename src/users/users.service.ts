@@ -8,6 +8,7 @@ import { hashPassword } from "../utils/bcrypt"
 import { HttpException } from '@nestjs/common/exceptions';
 import { UseCase } from 'src/two-factor/entities/verif.entity';
 import { TwoFactorService } from 'src/two-factor/two-factor.service';
+import { CryptUtil } from 'src/utils/crypt.util'
 
 //from netsjs cli i want to rename a full resource?
 @Injectable()
@@ -34,28 +35,39 @@ export class UsersService {
     // return {email:savedUser.email};
   }
 
-  async createTemp(dto: CreateUserDto,session: Record<string,any>){
+  async createTemp(dto: CreateUserDto){
     // const user = await this.findOne(email);
     // if (!user) {
     //   throw new HttpException('Usuario no encontrado', 404);
     // }
     dto.password = await hashPassword(dto.password);
-    session.user = dto;
-    this.twoFactorService.generate(session)
-    
-    return session;
-  }
-  async verifyRegisterCode(codigo: string, session: Record<string,any>){
-    console.log("codigo: "+session.code)    
-    if (codigo!==session.code){
-      return new HttpException("Codigo incorrecto", 401);
+    const code = await this.twoFactorService.generate(dto.email);
+    const cryptUtil = await CryptUtil.getInstance();
+    console.log({...dto,code})
+    return {
+      
+      userToken: await cryptUtil.encrypt(JSON.stringify({...dto,code}))
     }
-    console.log("Codigo correcto")
-    await this.create(session.user)
+  }
+  async verifyRegisterCode(userToken: string){
+    const cryptUtil = await CryptUtil.getInstance();
+    try{
+      const decyprted = await cryptUtil.decrypt(userToken)
+      const parsedToken = JSON.parse(decyprted)
+      console.log(parsedToken)
+      // Catch the error where a string is not valid to parse to json?
+    }catch(e){
+      
+    }
+    // console.log("codigo: "+code)    
+    // if (sendedCode!==code){
+    //   return new HttpException("Codigo incorrecto", 401);
+    // }
+    // console.log("Codigo correcto")
+    // await this.create(dto)
 
-    delete session.user;
-    delete session.code;
-    return session.id;
+
+    return {};
   }
   findAll() {
     return this.usersRepo.find();

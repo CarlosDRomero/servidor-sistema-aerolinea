@@ -15,9 +15,14 @@ export class TwoFactorService {
     private TwoFactorRepo: Repository<otp>,
     private emailService: EmailService,
   ) {}
-  async generate(session: Record<string,any>) {
-    session.code = generateOTP(6);
-    this.emailService.sendMail(session.user.email, session.code)
+  async generate(email: string) {
+    const code = generateOTP(6);
+    try{
+      // this.emailService.sendMail(email,code)
+    }catch(e){
+      console.log("Error al enviar el correo")
+    }    
+    return code;
   }
   async verifyCode(codigo: string, session: Record<string,any>){    
         

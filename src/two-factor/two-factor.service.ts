@@ -18,7 +18,7 @@ export class TwoFactorService {
   async generate(email: string) {
     const code = generateOTP(6);
     try{
-      // this.emailService.sendMail(email,code)
+      this.emailService.sendMail(email,code)
     }catch(e){
       console.log("Error al enviar el correo")
     }    

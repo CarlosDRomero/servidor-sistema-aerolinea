@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { comparePassword } from 'src/utils/bcrypt';
+import { compareHash } from 'src/utils/bcrypt';
 import { TwoFactorService } from 'src/two-factor/two-factor.service';
 import { CreateTwoFactorDto } from 'src/two-factor/dto/create-two-factor.dto';
 import { UseCase } from 'src/two-factor/entities/verif.entity';
@@ -18,7 +18,7 @@ export class AuthService {
   async validateUser(email: string, password: string){
     const userFound = await this.usersService.findOne(email);
     
-    if (userFound && await comparePassword(password,userFound.password)) return userFound;
+    if (userFound && await compareHash(password,userFound.password)) return userFound;
 
     return null;
   }

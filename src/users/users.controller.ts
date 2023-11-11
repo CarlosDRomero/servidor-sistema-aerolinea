@@ -15,8 +15,8 @@ export class UsersController {
   @Post('verification')
   //nestjs get headers
 
-  async verify(@Headers() header: {usertoken:string}, @Body() dto:{code:string}) {
-    return await this.usersService.verifyRegisterCode(header.usertoken)
+  async verify(@Headers() header: {usertoken:string}, @Body() body:{code:string}) {
+    return await this.usersService.verifyRegisterCode(header.usertoken, body.code)
   }
 
   @Get()

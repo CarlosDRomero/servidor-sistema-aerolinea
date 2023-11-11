@@ -2,7 +2,8 @@ import { registerAs } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 export default registerAs('database',
-(): TypeOrmModuleOptions=>{
+()
+:TypeOrmModuleOptions =>{
   console.log("Conectando base de datos...")
   return {
     type: 'postgres',

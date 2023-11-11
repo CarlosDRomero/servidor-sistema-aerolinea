@@ -16,8 +16,6 @@ export class CryptUtil{
   private async initializeCrypto(): Promise<void> {
     if (!this.key) {
       this.key = await this.generateKey();
-      this.cipher = createCipheriv(process.env.CRYPT_METHOD, this.key, this.iv);
-      this.decipher = createDecipheriv(process.env.CRYPT_METHOD, this.key, this.iv);
     }
   }
   private async generateKey(): Promise<Buffer>{
@@ -33,6 +31,7 @@ export class CryptUtil{
     return CryptUtil.instance;
   }
   encrypt = (text: string)=>{
+    this.cipher = createCipheriv(process.env.CRYPT_METHOD, this.key, this.iv);
     return this.initializeCrypto().then(() => {
       const encrypted = Buffer.concat([
         this.cipher.update(text),
@@ -44,6 +43,7 @@ export class CryptUtil{
   }
   
   decrypt = (text: string)=>{
+    this.decipher = createDecipheriv(process.env.CRYPT_METHOD, this.key, this.iv);
     return this.initializeCrypto().then(() => {
       console.log(text)
       const encrypted = Buffer.from(text,'base64')

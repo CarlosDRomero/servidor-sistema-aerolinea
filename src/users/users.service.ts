@@ -4,11 +4,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { hashPassword } from "../utils/bcrypt"
+import { compareHash, toHash } from "../utils/bcrypt"
 import { HttpException } from '@nestjs/common/exceptions';
-import { UseCase } from 'src/two-factor/entities/verif.entity';
 import { TwoFactorService } from 'src/two-factor/two-factor.service';
 import { CryptUtil } from 'src/utils/crypt.util'
+import { addMinutes } from 'src/utils/dateOps';
 
 //from netsjs cli i want to rename a full resource?
 @Injectable()
@@ -40,31 +40,38 @@ export class UsersService {
     // if (!user) {
     //   throw new HttpException('Usuario no encontrado', 404);
     // }
-    dto.password = await hashPassword(dto.password);
-    const code = await this.twoFactorService.generate(dto.email);
-    const cryptUtil = await CryptUtil.getInstance();
+    dto.password = await toHash(dto.password);
+    var code = await this.twoFactorService.generate(dto.email);
+    code = await toHash(code);
     console.log({...dto,code})
+    const cryptUtil = await CryptUtil.getInstance();
     return {
       
-      userToken: await cryptUtil.encrypt(JSON.stringify({...dto,code}))
+      userToken: await cryptUtil.encrypt(JSON.stringify({...dto,code, expires: addMinutes(new Date(),5)}))
     }
   }
-  async verifyRegisterCode(userToken: string){
+  async verifyRegisterCode(userToken: string, sendedCode: string){
     const cryptUtil = await CryptUtil.getInstance();
     try{
+      console.log("UserToken: "+userToken)
       const decyprted = await cryptUtil.decrypt(userToken)
       const parsedToken = JSON.parse(decyprted)
-      console.log(parsedToken)
+      const code = parsedToken.code
+      //las demas variables del parsedToken que no son el codigo forman el dto del usuario
+      let dto = { ...parsedToken };
+      delete dto.code;
+      console.log(parsedToken)      
+      if (!compareHash(sendedCode,parsedToken.code)){
+        return new HttpException("Codigo incorrecto", 401);
+      }
+      
+    // console.log("Codigo correcto")
+      await this.create(dto)
       // Catch the error where a string is not valid to parse to json?
     }catch(e){
-      
+      console.log("JSON no parseable")
     }
-    // console.log("codigo: "+code)    
-    // if (sendedCode!==code){
-    //   return new HttpException("Codigo incorrecto", 401);
-    // }
-    // console.log("Codigo correcto")
-    // await this.create(dto)
+    
 
 
     return {};

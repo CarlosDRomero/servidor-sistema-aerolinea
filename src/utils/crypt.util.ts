@@ -61,4 +61,24 @@ export class CryptUtil{
     
   }
 
+  encryptJson(object: Object){
+    let jsonString = JSON.stringify(object);
+    return this.encrypt(jsonString).then((res)=>{
+      return res;
+    })
+  }
+  async decryptJson(stringObj: string){
+    try{
+      let result = await this.decrypt(stringObj);
+      if(!result || result.length==0 )return null;
+      else{
+        let object = JSON.parse(result);
+        return object;
+      }
+    } catch (error) {
+      return null
+    }
+  }
+
+
 }

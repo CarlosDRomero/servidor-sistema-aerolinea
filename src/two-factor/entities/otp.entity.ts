@@ -2,17 +2,12 @@ import { User } from "src/users/entities/user.entity";
 import { generateOTP } from "src/utils/generateOTP";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
-export enum UseCase{
-  SIGNUP,
-  LOGIN
-}
-
 @Entity('otp')
 export class otp {
   @PrimaryGeneratedColumn('uuid')
   id: string
   
-  @Column({default: generateOTP(6), onUpdate: generateOTP(6)})
+  @Column()
   code: string
 
   @Column({default: ()=>'CURRENT_TIMESTAMP'})
@@ -21,11 +16,11 @@ export class otp {
   @Column({default: ()=>'CURRENT_TIMESTAMP', onUpdate:'CURRENT_TIMESTAMP'})
   updatedAt: Date
 
-  @Column('int')
-  useCase: UseCase
-
   @Column()
   expiresAt: Date
+
+  @Column({nullable:true})
+  redeemedAt: Date
 
   @Column()
   user_id:string

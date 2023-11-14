@@ -1,14 +1,18 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateTwoFactorDto } from './create-two-factor.dto';
 import { addMinutes } from 'src/utils/dateOps';
-import { UseCase } from '../entities/verif.entity';
+import { twoFactorConstants } from '../two-factor.constants';
 
 export class UpdateTwoFactorDto extends PartialType(CreateTwoFactorDto) {
-  expiresAt?: Date;
-  useCase: UseCase
-  constructor(useCase: UseCase){
+  readonly expiresAt?: Date;
+  readonly redeemedAt: Date;
+  code: string
+  //constructor with optional parameter
+  constructor(code: string,expiresAt: Date, redeemedAt: Date=null){
     super();
-    this.expiresAt = addMinutes(new Date(), 5);
-    this.useCase = useCase;
+    const now= new Date();
+    this.expiresAt = expiresAt;
+    this.code = code;
+    this.redeemedAt = redeemedAt;
   }
 }

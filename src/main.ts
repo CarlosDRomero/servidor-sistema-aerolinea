@@ -6,7 +6,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   //permitir que se puedan ahcer peticines desde mi localhost:4200 en las corsoptions de nestjs?
   
-  app.enableCors({ origin: 'http://localhost:4200' });
+  app.enableCors({ 
+    origin: 'http://localhost:4200',
+    //  origin:'https://wqb8p1ls-4200.use.devtunnels.ms'
+  });
   // app.use(cookieParser());
   // app.use(session({
   //   secret: process.env.SESSION_SECRET,

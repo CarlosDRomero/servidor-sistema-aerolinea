@@ -11,6 +11,8 @@ import databaseConfig from './config/database.config';
 
 import { MailerModule } from 'nestjs-mailer';
 import { TwoFactorModule } from './two-factor/two-factor.module';
+import { AmadeusApiModule } from './amadeus-api/amadeus-api.module';
+import { OdsearchModule } from './odsearch/odsearch.module';
 import mailConfig from 'src/config/mail.config';
 
 @Module({
@@ -21,7 +23,9 @@ import mailConfig from 'src/config/mail.config';
     AuthModule,
     UsersModule,
     EmailModule,
-    TwoFactorModule
+    TwoFactorModule,
+    AmadeusApiModule,
+    OdsearchModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { compareHash, toHash } from "../utils/bcrypt"
-import { HttpException } from '@nestjs/common/exceptions';
 import { TwoFactorService } from 'src/two-factor/two-factor.service';
 import { CryptUtil } from 'src/utils/crypt.util'
-import { addMinutes } from 'src/utils/dateOps';
+import { addMinutes, isExpired } from 'src/utils/dateOps';
+import { twoFactorConstants } from 'src/two-factor/two-factor.constants';
+import { CreationError, DuplicatedEmailException } from 'src/exceptions/users.exceptions';
+import { InvalidCodeException } from 'src/exceptions/opt.exceptions';
 
 //from netsjs cli i want to rename a full resource?
 @Injectable()
@@ -21,61 +23,48 @@ export class UsersService {
 
   async create(dto: CreateUserDto) {
     const exists = await this.findOne(dto.email);
-    if (exists) return new HttpException(
-      `Esta dirección de correo ya se encuentra registrada`,
-      409,
-    );
+    if (exists) return DuplicatedEmailException()
 
     const newUser = this.usersRepo.create(dto)
     console.log(newUser)
     const savedUser = await this.usersRepo.save(newUser)
-
-    // this.TwoFactorService.generate(new CreateTwoFactorDto(savedUser, UseCase.SIGNUP));
-
-    // return {email:savedUser.email};
+    return savedUser;
   }
 
   async createTemp(dto: CreateUserDto){
-    // const user = await this.findOne(email);
-    // if (!user) {
-    //   throw new HttpException('Usuario no encontrado', 404);
-    // }
+    const exists = await this.findOne(dto.email);
+    if (exists) return DuplicatedEmailException()
+
     dto.password = await toHash(dto.password);
     var code = await this.twoFactorService.generate(dto.email);
     code = await toHash(code);
-    console.log({...dto,code})
     const cryptUtil = await CryptUtil.getInstance();
+    const expires = addMinutes(new Date(),twoFactorConstants.expiresTime)
     return {
-      
-      userToken: await cryptUtil.encrypt(JSON.stringify({...dto,code, expires: addMinutes(new Date(),5)}))
+      userToken: await cryptUtil.encryptJson({...dto,code, expires})
     }
   }
   async verifyRegisterCode(userToken: string, sendedCode: string){
     const cryptUtil = await CryptUtil.getInstance();
-    try{
-      console.log("UserToken: "+userToken)
-      const decyprted = await cryptUtil.decrypt(userToken)
-      const parsedToken = JSON.parse(decyprted)
+    const parsedToken = await cryptUtil.decryptJson(userToken)
+    if (parsedToken){
       const code = parsedToken.code
-      //las demas variables del parsedToken que no son el codigo forman el dto del usuario
       let dto = { ...parsedToken };
       delete dto.code;
-      console.log(parsedToken)      
-      if (!compareHash(sendedCode,parsedToken.code)){
-        return new HttpException("Codigo incorrecto", 401);
+      console.log(compareHash(sendedCode,code))
+      console.log(isExpired(dto.expires))      
+      if (await compareHash(sendedCode,code) && isExpired(dto.expires)) return InvalidCodeException();
+      console.log("Creando usuario")
+      const newUser = await this.create(dto)
+      if (!newUser) return CreationError();
+      return{
+        message:"Success"
       }
-      
-    // console.log("Codigo correcto")
-      await this.create(dto)
-      // Catch the error where a string is not valid to parse to json?
-    }catch(e){
-      console.log("JSON no parseable")
     }
+    return InvalidCodeException();
     
-
-
-    return {};
   }
+
   findAll() {
     return this.usersRepo.find();
   }

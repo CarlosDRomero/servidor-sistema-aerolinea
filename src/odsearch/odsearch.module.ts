@@ -5,6 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 @Module({
   imports:[HttpModule],
   controllers: [OdsearchController],
-  providers: [OdsearchService]
+  providers: [OdsearchService],
+  exports:[OdsearchService]
 })
 export class OdsearchModule {}

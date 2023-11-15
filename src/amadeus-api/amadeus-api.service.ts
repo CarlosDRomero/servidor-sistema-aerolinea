@@ -6,14 +6,21 @@ import { lastValueFrom, map,catchError } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { SearchFlightDto } from './dto/search-flight.dto';
 import { urls } from './amadeus-api.url';
+import { OdsearchService } from 'src/odsearch/odsearch.service';
+
+
 @Injectable()
 export class AmadeusApiService {
-  constructor(private http: HttpService){
+  constructor(
+    private http: HttpService,
+    private odsearchService: OdsearchService
+){
     this.genNewAuthToken()
   }
-
+  
 
   handleExpiredToken = async (error) =>{
+    if (!error.response) return;
     const errorInfo = error.response.data.errors[0];
     if (errorInfo.status===401){
         await this.genNewAuthToken();
@@ -51,29 +58,59 @@ export class AmadeusApiService {
         return this.token;
     }
     async searchFlights(params: SearchFlightDto){
-        var res;
-        this.http.get(urls.searchFlights,{
+        console.log(params)
+        var response = this.http.get(urls.searchFlights,{
             params,
             headers:{
-                'Authorization':this.token.toString()
+                'Authorization':this.token?.toString() || ''
             }
         }).pipe(map((res)=>{
-            console.log(res)
+            return res.data;
         }),
             catchError(this.handleExpiredToken)
-        ).subscribe(async (res)=>{
-            
-            if (this.token.expired) {
-                console.log("Reattemping")
-                this.token.expired=false
-                res = await this.searchFlights(params);
-            }    
-        })
-        return res.then(
-            console.log("a")
-        );
+        )
         
+        const prom = await lastValueFrom(response)
 
+        if (!this.token.expired){
+            const data: [] = prom.data
+            const origin = await lastValueFrom(this.odsearchService.findByAirportCode(params.originLocationCode))
+            const destination =await lastValueFrom(this.odsearchService.findByAirportCode(params.destinationLocationCode))
+            var payload = {
+                url: prom.meta.self,
+                data: []
+            }
+            payload.data = data.map((flight:any)=>{
+                const itineraries = flight.itineraries
+                const segments = itineraries.length
+                const currency = flight.price.currency
+                const price = flight.price.total
+                const flightClass = flight.travelerPricings[0].fareDetailsBySegment.cabin
+                const duration:string = itineraries[0].duration
+                const departureTime = itineraries[0].segments[0].departure.at.split("T")[1]
+                const carrierCode = itineraries[0].segments[0].carrierCode
+                const airlineName = prom.dictionaries.carriers[carrierCode]
+                return {
+                    id: flight.id,
+                    origen: origin[0],
+                    destino: destination[0],
+                    moneda: currency,
+                    precio: price,
+                    tipo: flightClass,
+                    duracion: duration,
+                    fecha_ida: params.departureDate,
+                    hora_salida: departureTime,
+                    fecha_vuelta: params.returnDate,
+                    codigo_aerolinea: carrierCode,
+                    nombre_aerolinea: airlineName,
+                }
+
+            })
+            console.log(payload)
+            return payload;
+        }
+        this.token.expired=false
+        return await this.searchFlights(params);
         // return response
     }
 }

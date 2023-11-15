@@ -14,7 +14,7 @@ export class OdsearchController {
 
   @Get()
   findAll(@Req() req) {
-    return this.odsearchService.findAll(req.query.city);
+    return this.odsearchService.findByParams(`"${req.query.city_name}"`);
   }
 
   @Get(':id')

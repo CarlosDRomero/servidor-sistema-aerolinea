@@ -9,11 +9,10 @@ export class AmadeusApiController {
   constructor(private readonly amadeusApiService: AmadeusApiService) {}
 
   @Get('flight-offers')
-  search(
+  async search(
     @Query() query: SearchFlightDto
   ){
-    console.log(query)
-    return this.amadeusApiService.searchFlights(query);
+    return await this.amadeusApiService.searchFlights(new SearchFlightDto(query));
   }
   // @Post()
   // create(@Body() createAmadeusApiDto: CreateAmadeusApiDto) {

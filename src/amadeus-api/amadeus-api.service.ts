@@ -21,6 +21,7 @@ export class AmadeusApiService {
 
   handleExpiredToken = async (error) =>{
     if (!error.response) return;
+    console.log(error.response.data.errors)
     const errorInfo = error.response.data.errors[0];
     if (errorInfo.status===401){
         await this.genNewAuthToken();
@@ -65,19 +66,19 @@ export class AmadeusApiService {
                 'Authorization':this.token?.toString() || ''
             }
         }).pipe(map((res)=>{
+            console.log(res.data)
             return res.data;
         }),
             catchError(this.handleExpiredToken)
         )
         
         const prom = await lastValueFrom(response)
-
         if (!this.token.expired){
             const data: [] = prom.data
             const origin = await lastValueFrom(this.odsearchService.findByAirportCode(params.originLocationCode))
             const destination =await lastValueFrom(this.odsearchService.findByAirportCode(params.destinationLocationCode))
             var payload = {
-                url: prom.meta.self,
+                url: prom.meta.links.self,
                 data: []
             }
             payload.data = data.map((flight:any)=>{
@@ -85,9 +86,10 @@ export class AmadeusApiService {
                 const segments = itineraries.length
                 const currency = flight.price.currency
                 const price = flight.price.total
-                const flightClass = flight.travelerPricings[0].fareDetailsBySegment.cabin
+                const flightClass = flight.travelerPricings[0].fareDetailsBySegment[0].cabin
                 const duration:string = itineraries[0].duration
-                const departureTime = itineraries[0].segments[0].departure.at.split("T")[1]
+                const departureDate = itineraries[0].segments[0].departure.at
+                const returnDate = itineraries[0].segments.length>1? itineraries[0].segments[1].departure.at : null
                 const carrierCode = itineraries[0].segments[0].carrierCode
                 const airlineName = prom.dictionaries.carriers[carrierCode]
                 return {
@@ -99,8 +101,8 @@ export class AmadeusApiService {
                     tipo: flightClass,
                     duracion: duration,
                     fecha_ida: params.departureDate,
-                    hora_salida: departureTime,
-                    fecha_vuelta: params.returnDate,
+                    hora_salida: departureDate,
+                    fecha_vuelta: returnDate,
                     codigo_aerolinea: carrierCode,
                     nombre_aerolinea: airlineName,
                 }

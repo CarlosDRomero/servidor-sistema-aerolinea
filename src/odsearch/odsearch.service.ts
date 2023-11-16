@@ -23,7 +23,7 @@ export class OdsearchService {
     return this.findByParams(`column_1="${airportCode}"`)
   }
   findByParams(where){
-    
+    console.log(where)
     return this.http.get(ODSearchSources.Search,{
       params:{
         where

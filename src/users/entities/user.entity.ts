@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm"
+import { FlightOrder } from "src/flight-order/entities/flight-order.entity"
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToMany } from "typeorm"
 
 @Entity('users')
 export class User {
@@ -16,5 +17,8 @@ export class User {
   email: string
   @Column()
   password: string
+
+  @ManyToMany(type=> FlightOrder, flight => flight.users)
+  flights: FlightOrder[]
   
 }

@@ -13,6 +13,7 @@ import { MailerModule } from 'nestjs-mailer';
 import { TwoFactorModule } from './two-factor/two-factor.module';
 import { AmadeusApiModule } from './amadeus-api/amadeus-api.module';
 import { OdsearchModule } from './odsearch/odsearch.module';
+import { FlightOrderModule } from './flight-order/flight-order.module';
 import mailConfig from 'src/config/mail.config';
 
 @Module({
@@ -25,7 +26,8 @@ import mailConfig from 'src/config/mail.config';
     EmailModule,
     TwoFactorModule,
     AmadeusApiModule,
-    OdsearchModule
+    OdsearchModule,
+    FlightOrderModule
   ],
   controllers: [AppController],
   providers: [AppService],
